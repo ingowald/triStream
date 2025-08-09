@@ -37,8 +37,10 @@ namespace triStream {
     // now add the header to the front
     file.seekp(0);
     file.write((char*)&header,sizeof(header));
-    if (!file.good())
-      throw std::runtime_error("some error while writing to filesink "+toString());
+    if (!file.good()) {
+      // throw std::runtime_error("some error while writing to filesink "+toString());
+      std::cerr << "some error while writing to filesink " << toString() << std::endl;
+    }
   }
 
   void FileSink::flush()
