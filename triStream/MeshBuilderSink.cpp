@@ -60,15 +60,56 @@ namespace triStream {
       stillToDo = std::move(other);
     }
   }
+
+  std::string computeHashFor(mini::Mesh::SP mesh)
+  {
+    mini::Material::SP mat = mesh->material;
+#if 1
+    std::stringstream ss;
+    ss << (int*)mat.get();
+    return ss.str();
+#else
+    DisneyMaterial::SP disney = mat->as<DisneyMaterial>();
+    if (disney) {
+      ss << "DisneyMaterial:";
+      ss << "emission " << disney->emission;
+      ss << "baseColor " << disney->baseColor;
+      ss << "roughness " << disney->roughness;
+      ss << "transmission " << disney->transmission;
+      ss << "ior " << disney->ior;
+      // we use actual mem addresses here, which is OK because we only
+      // uset hsi for a hash, this will never get stored anywhere
+      // beyond the lifetime of this process.
+      ss << "colorTexture " << (size_t)disney->colorTexture.get();
+      ss << "alphaTexture " << (size_t)disney->alphaTexture.get();
+      return ss.str();
+    }
+    return mat->toString();
+#endif
+  }
   
   MeshBuilderSink::SP MetaMeshBuilderSink::getSinkFor(int meta)
   {
     std::lock_guard<std::mutex> lock(mutex);
     auto it = meshByMeta.find(meta);
     if (it == meshByMeta.end()) {
-      MeshBuilderSink::SP newSink = MeshBuilderSink::create();
-      meshByMeta[meta] = newSink;
-      return newSink;
+      if (metaMeshes) {
+        // merge metas that refer to the same material ...
+        const std::string hash = computeHashFor((*metaMeshes)[meta]);
+        if (uniqueMetaByMaterial.find(hash) != uniqueMetaByMaterial.end()) {
+          meshByMeta[meta] = meshByMeta[uniqueMetaByMaterial[hash]];
+        } else {
+          MeshBuilderSink::SP newSink = MeshBuilderSink::create();
+          meshByMeta[meta] = newSink;
+          uniqueMetaByMaterial[hash] = meta;
+        }
+        return meshByMeta[meta];
+      } else {
+        // NO material merging - every used meta gets its own output mesh
+        MeshBuilderSink::SP newSink = MeshBuilderSink::create();
+        meshByMeta[meta] = newSink;
+        return newSink;
+      }
     } else
       return it->second;
   }

@@ -53,6 +53,7 @@ namespace triStream {
     std::string inFileName = "";
     std::string outFileName = "";
     std::string metaFileName = "";
+    bool mergeMeshes = false;
     
     for (int i=1;i<ac;i++) {
       const std::string arg =av[i];
@@ -60,6 +61,8 @@ namespace triStream {
         outFileName = av[++i];
       } else if (arg == "-m" || arg == "--meta") {
         metaFileName = av[++i];
+      } else if (arg == "-mm" || arg == "--merge-meshes") {
+        mergeMeshes = true;
       } else if (arg[0] != '-') {
         inFileName = arg;
       } else throw std::runtime_error("unknown cmd line arg "+arg);
@@ -82,7 +85,8 @@ namespace triStream {
 
     std::cout << "creating file source from " << inFileName << std::endl;
     FileSource source(inFileName);
-    MetaMeshBuilderSink::SP meshBuilder = MetaMeshBuilderSink::create();
+    MetaMeshBuilderSink::SP meshBuilder
+      = MetaMeshBuilderSink::create(mergeMeshes ? &meta : nullptr);
     source.streamTo(meshBuilder.get());
     
     std::cout << "done building meshes: found "

@@ -17,6 +17,7 @@
 #pragma once
 
 #include "Sink.h"
+#include "miniScene/Scene.h"
 
 namespace triStream {
 
@@ -42,13 +43,23 @@ namespace triStream {
   struct MetaMeshBuilderSink : public Sink {
     typedef std::shared_ptr<MetaMeshBuilderSink> SP;
 
-    static SP create() { return std::make_shared<MetaMeshBuilderSink>(); }
+    MetaMeshBuilderSink(const std::vector<mini::Mesh::SP> *metaMeshes)
+      : metaMeshes(metaMeshes)
+    {}
+    
+    static SP create(const std::vector<mini::Mesh::SP> *metaMeshes=0)
+    { return std::make_shared<MetaMeshBuilderSink>(metaMeshes); }
     
     void push(const std::vector<Triangle> &triangles) override;
 
     MeshBuilderSink::SP getSinkFor(int meta);
     
     std::mutex mutex;
+    /*! if non-null, we are to use this to merge used meta meshes with
+        same material into a single output */
+    const std::vector<mini::Mesh::SP> *const metaMeshes;
+    std::map<std::string,int> uniqueMetaByMaterial;
+
     std::map<int,MeshBuilderSink::SP> meshByMeta;
   };
   
