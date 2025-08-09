@@ -1,2 +1,0 @@
-/usr/bin/ar qc libbts.a CMakeFiles/bts.dir/TriStream.cpp.o CMakeFiles/bts.dir/Filter.cpp.o CMakeFiles/bts.dir/MiniSceneSource.cpp.o CMakeFiles/bts.dir/FileSource.cpp.o CMakeFiles/bts.dir/FileSink.cpp.o CMakeFiles/bts.dir/MeshBuilderSink.cpp.o CMakeFiles/bts.dir/Fork.cpp.o CMakeFiles/bts.dir/Stats.cpp.o CMakeFiles/bts.dir/GridSplitter.cpp.o
-/usr/bin/ranlib libbts.a
